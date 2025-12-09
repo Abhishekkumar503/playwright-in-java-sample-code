@@ -24,13 +24,34 @@ public class ASimplePlaywrightTest {
 //        Browser browser =  playwright.chromium().launch();
 
 //        This used for UI ( false to headless browser )
-        Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(false));
+        Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(true));
         Page page = browser.newPage();
-        page.navigate("https://www.google.com/");
+        page.navigate("https://www.practicesoftwaretesting.com/");
         System.out.println(page.title());
-        Assert.assertEquals(page.title(),"Google");
+        Assert.assertEquals(page.title(),"Practice Software Testing - Toolshop - v5.0");
 
         browser.close();
         playwright.close();
     }
+
+    @Test
+    void shouldSearchByKeyword() throws InterruptedException {
+        Playwright playwright = Playwright.create();
+        Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(true));
+        Page page = browser.newPage();
+        page.navigate("https://www.practicesoftwaretesting.com/");
+        System.out.println(page.title());
+
+        page.locator("#search-query").fill("Pliers"); //ID Locator
+        Thread.sleep(1000); // HardCoded wait
+        Assert.assertEquals(page.title(),"Practice Software Testing - Toolshop - v5.0");
+        page.locator("//*[@id='filters']/form[2]/div/button[2]").click();
+        Thread.sleep(2000);
+        int totalNoOfResults = page.locator(".card-body").count();
+        Assert.assertEquals(totalNoOfResults,4);
+        browser.close();
+        playwright.close();
+    }
+
+
 }
