@@ -15,7 +15,6 @@ public class SearchOutOfStockPliersByUsePlaywrigtAnnotation{
     @Test
     public void search(Page page) {
         page.navigate("https://www.practicesoftwaretesting.com/");
-        page.waitForLoadState();
         page.locator("#search-query").fill("Pliers");
         page.getByRole(AriaRole.BUTTON,new Page.GetByRoleOptions().setName("Search")).click();
         page.locator("[data-test='search_completed']").waitFor();
