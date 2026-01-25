@@ -2,6 +2,7 @@ package com.serenitydojo.playwright;
 
 import com.microsoft.playwright.*;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 
@@ -13,13 +14,13 @@ class LaunchBrowser {
     private static BrowserContext browserContext;
     Page page;
 
-    @BeforeSuite
+    @BeforeSuite(alwaysRun = true)
     public static void setUpBrowser()
     {
         playwright = Playwright.create();
         browser = playwright.chromium().launch(new BrowserType.
                 LaunchOptions().
-                setHeadless(false).
+                setHeadless(true).
                 setArgs(Arrays.asList("--no-sandbox",
                         "--disable-gpu",
                         "--disable-extensions"))
@@ -31,9 +32,11 @@ class LaunchBrowser {
     public void setUp()
     {
         page = browserContext.newPage();
+        page.navigate("https://www.practicesoftwaretesting.com/");
+        System.out.println("Browser launched Successfully!");
     }
 
-    @AfterMethod
+    @AfterSuite(alwaysRun = true)
     public void setdown()
     {
         browser.close();
