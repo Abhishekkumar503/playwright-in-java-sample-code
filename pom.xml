@@ -57,6 +57,12 @@
             <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
+        <!-- this used for create fakedata this working only for java and kotlin-->
+        <dependency>
+            <groupId>net.datafaker</groupId>
+            <artifactId>datafaker</artifactId>
+            <version>2.5.2</version>
+        </dependency>
 
         <dependency>
             <groupId>org.assertj</groupId>
