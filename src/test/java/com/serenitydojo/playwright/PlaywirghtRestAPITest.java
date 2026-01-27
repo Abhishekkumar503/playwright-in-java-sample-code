@@ -20,7 +20,7 @@ public class PlaywirghtRestAPITest {
     /**
      * 1. Prepare MockResponse for single item
      * 2. Route the API response to what you want to check.
-     * 3. Then navigate to the URL (if you naviage to first then Route will not work).
+     * 3. Then navigate to the URL (if you navigate to first then Route will not work).
      * 4. Declare all code after that
      */
 
