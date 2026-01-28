@@ -38,4 +38,25 @@ public class LoginWithRegisteredUserTest {
         Assertions.assertThat(loginPage.title()).isEqualTo("My account");
     }
 
+    @Test
+    @DisplayName("Should ")
+    public void should_login_with_inValid_USER(Page page){
+        // Genaerate USER
+        Users.User user = Users.User.randomUser();
+        UserAPIClient userAPIClient = new UserAPIClient(page);
+        userAPIClient.registerUser(user);
+
+        // login to Page
+        LoginPage loginPage = new LoginPage(page);
+        loginPage.open();
+        loginPage.loginWithWrongUSER(user);
+
+        // Validate error message
+        Assertions.assertThat(loginPage.errorMessage()).isEqualTo("Invalid email or password");
+    }
+
+
+
+
+
 }

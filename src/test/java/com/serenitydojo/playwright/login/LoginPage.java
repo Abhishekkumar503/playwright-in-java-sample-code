@@ -27,4 +27,14 @@ public class LoginPage {
     public String title() {
         return page.getByTestId("page-title").textContent();
     }
+
+    public void loginWithWrongUSER(Users.User user) {
+        page.getByTestId("email").fill(user.email());
+        page.getByTestId("password").fill("Az@10IN");
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Login")).click();
+    }
+
+    public String errorMessage() {
+        return page.locator(".help-block").textContent();
+    }
 }
