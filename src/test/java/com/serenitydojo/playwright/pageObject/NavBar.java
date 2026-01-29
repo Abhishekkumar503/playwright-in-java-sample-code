@@ -1,0 +1,19 @@
+package com.serenitydojo.playwright.pageObject;
+
+import com.microsoft.playwright.Page;
+
+public class NavBar {
+    private final Page page;
+
+    NavBar(Page page) {
+        this.page = page;
+    }
+
+    public void openCart() {
+        page.getByTestId("nav-cart").click();
+    }
+
+    public void openHomePage() {
+        page.navigate("https://practicesoftwaretesting.com");
+    }
+}
