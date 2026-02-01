@@ -5,13 +5,19 @@ import org.junit.Assert;
 import org.junit.jupiter.api.*;
 
 import java.nio.file.Paths;
+import java.sql.Time;
+import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Date;
 
 public class TracingAndDebugging {
     private static Playwright playwright;
     private static Browser browser;
     private static BrowserContext browserContext;
     Page page;
+
+    LocalDateTime now = LocalDateTime.now();
+
 
     @BeforeAll
     public static void setUpBrowser()
@@ -42,11 +48,15 @@ public class TracingAndDebugging {
     }
 
     @AfterEach
-    public void RecordTrace()
+    public void RecordTrace(TestInfo testInfo)
     {
+        String name = testInfo.getTestMethod()
+                .map(method -> method.getName())
+                .orElse("unknown-test");
+
         browserContext.tracing().stop(
                 new Tracing.StopOptions()
-                        .setPath(Paths.get("trace.zip"))
+                        .setPath(Paths.get("target/Trace/trace-" +name+"-"+now+".zip"))
         );
         page.close();
     }
