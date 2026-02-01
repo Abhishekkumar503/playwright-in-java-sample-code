@@ -1,14 +1,14 @@
 package com.serenitydojo.playwright.Tracing;
 
 import com.microsoft.playwright.*;
-import org.junit.Assert;
+
 import org.junit.jupiter.api.*;
 
 import java.nio.file.Paths;
-import java.sql.Time;
+
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Date;
+
 
 public class TracingAndDebugging {
     private static Playwright playwright;
@@ -73,7 +73,7 @@ public class TracingAndDebugging {
 
         page.navigate("https://www.practicesoftwaretesting.com/");
         System.out.println(page.title());
-        Assert.assertEquals(page.title(),"Practice Software Testing - Toolshop - v5.0");
+        Assertions.assertEquals(page.title(),"Practice Software Testing - Toolshop - v5.0");
 
     }
 
@@ -82,11 +82,11 @@ public class TracingAndDebugging {
         page.navigate("https://www.practicesoftwaretesting.com/");
         System.out.println(page.title() + " 2");
         page.locator("#search-query").fill("Pliers"); //ID Locator
-        Assert.assertEquals(page.title(),"Practice Software Testing - Toolshop - v5.0");
+        Assertions.assertEquals(page.title(),"Practice Software Testing - Toolshop - v5.0");
         page.locator("[data-test='search-submit']").click();
         page.waitForSelector("[data-test='search_completed']");
         int totalNoOfResults = page.locator(".card-body").count();
-        Assert.assertEquals(totalNoOfResults,4);
+        Assertions.assertEquals(totalNoOfResults,4);
     }
 
 
