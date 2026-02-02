@@ -1,8 +1,13 @@
 package com.serenitydojo.playwright.allure;
 
 import com.microsoft.playwright.Page;
+import io.qameta.allure.Feature;
 import io.qameta.allure.Step;
+import io.qameta.allure.Story;
+import org.junit.jupiter.api.DisplayName;
 
+@Feature("Navigation")
+@DisplayName("Navigation")
 public class NavBar {
     private final Page page;
 
@@ -10,12 +15,14 @@ public class NavBar {
         this.page = page;
     }
 
-    @Step("Opening the cart")
+    @DisplayName("Opening the Cart")
+    @Step("Cart Opened")
     public void openCart() {
         page.getByTestId("nav-cart").click();
     }
 
-    @Step("Opening Home Page")
+    @Story("Home Page Opened")
+    @Step("Navigation to Home Page")
     public void openHomePage() {
         page.navigate("https://practicesoftwaretesting.com");
     }

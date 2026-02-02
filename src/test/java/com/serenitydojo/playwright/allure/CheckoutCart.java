@@ -1,16 +1,22 @@
 package com.serenitydojo.playwright.allure;
 
 import com.microsoft.playwright.Page;
+import io.qameta.allure.Feature;
 import io.qameta.allure.Step;
+import io.qameta.allure.Story;
+import org.junit.jupiter.api.DisplayName;
 
 import java.util.List;
 
+@DisplayName("Check Out Cart")
+@Feature("Check Out Cart")
 public class CheckoutCart {
     private final Page page;
     CheckoutCart(Page page) {
         this.page = page;
     }
 
+    @Story("Getting Line Items")
     @Step("Getting Line Items")
     public List<CartLineItem> getLineItems() {
         page.locator("app-cart tbody tr").first().waitFor();
