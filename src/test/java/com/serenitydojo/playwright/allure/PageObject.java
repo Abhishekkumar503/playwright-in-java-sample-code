@@ -75,7 +75,7 @@ public class PageObject implements Screenshot{
         List<CartLineItem> lineItems = checkoutCart.getLineItems();
 
         Assertions.assertThat(lineItems)
-                .hasSize(1)
+                .hasSize(16)
                 .first()
                 .satisfies(item -> {
                     Assertions.assertThat(item.title()).contains("Combination Pliers");
