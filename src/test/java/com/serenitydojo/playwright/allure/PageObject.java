@@ -4,17 +4,20 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
 import com.serenitydojo.playwright.browserSetup.Base;
+import io.qameta.allure.Allure;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 @UsePlaywright(Base.class)
-public class PageObject {
+public class PageObject implements Screenshot{
 
     SearchComponent searchComponent;
     ProductList productList;
