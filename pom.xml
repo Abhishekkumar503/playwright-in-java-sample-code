@@ -14,6 +14,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <allure.version>2.29.0</allure.version>
         <aspectj.version>1.9.21</aspectj.version>
+        <cucumber.version>7.20.1</cucumber.version>
     </properties>
 
     <dependencyManagement>
@@ -52,30 +53,21 @@
         </dependency>
 
         <!--Add this when not in latest one -->
-<!--        <dependency>-->
-<!--            <groupId>org.junit.platform</groupId>-->
-<!--            <artifactId>junit-platform-suite</artifactId>-->
-<!--            <version>1.10.2</version>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-suite</artifactId>
+            <version>1.10.2</version>
+            <scope>test</scope>
+        </dependency>
 
 <!--        Add Cucumber for java and JUnit-->
         <!-- Source: https://mvnrepository.com/artifact/io.cucumber/cucumber-java -->
         <dependency>
             <groupId>io.cucumber</groupId>
             <artifactId>cucumber-java</artifactId>
-            <version>7.15.0</version>
+            <version>${cucumber.version}</version>
             <scope>test</scope>
         </dependency>
-
-        <!-- Source: https://mvnrepository.com/artifact/info.cukes/cucumber-junit -->
-        <dependency>
-            <groupId>info.cukes</groupId>
-            <artifactId>cucumber-junit</artifactId>
-            <version>1.2.5</version>
-            <scope>test</scope>
-        </dependency>
-
 
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -109,12 +101,15 @@
             <artifactId>allure-junit5</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <!-- Source: https://mvnrepository.com/artifact/io.qameta.allure/allure-cucumber-jvm -->
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-junit-platform-engine</artifactId>
+            <version>${cucumber.version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>io.qameta.allure</groupId>
-            <artifactId>allure-cucumber-jvm</artifactId>
-            <version>2.20.1</version>
+            <artifactId>allure-cucumber7-jvm</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -127,8 +122,9 @@
                 <version>3.1.2</version>
                 <configuration>
                     <includes>
-                        <include>**/allure/*.java</include> <!-- include *all* Java classes in allure package -->
-                        <skipTests>true</skipTests>
+                        <skipTests>false</skipTests>
+                        <include>**/cucumber/Test.java</include>
+<!--                        <include>**/cucumber/Tests.java</include>-->
                     </includes>
                 </configuration>
             </plugin>
@@ -153,7 +149,6 @@
 <!--                        <include>**/*Tests.java</include>-->
 <!--                    </includes>-->
 <!--                </configuration>-->
-
             </plugin>
 
             <plugin>
@@ -162,30 +157,7 @@
                 <version>2.15.0</version>
                 <configuration>
                     <reportVersion>${allure.version}</reportVersion>
-                    <resultsDirectory>${project.build.directory}/allure-results</resultsDirectory>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>allure-reports</id>
-                        <phase>post-integration-test</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-<!--            *******************************************-->
-
-
-
-            <plugin>
-                <groupId>io.qameta.allure</groupId>
-                <artifactId>allure-maven</artifactId>
-                <version>2.15.0</version>
-                <configuration>
-                    <reportVersion>${allure.version}</reportVersion>
-                    <resultsDirectory>${project.build.directory}/allure-results</resultsDirectory>
+                    <resultsDirectory>${project.build.directory}/allure-reports</resultsDirectory>
                 </configuration>
                 <executions>
                     <execution>

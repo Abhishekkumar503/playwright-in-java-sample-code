@@ -35,6 +35,7 @@ public class PageObject {
 
     @DisplayName("Without Page Objects")
     @Test
+
     void withoutPageObjects(Page page) {
         // Search for pliers
         page.waitForResponse("**/products/search?q=pliers**", () -> {
