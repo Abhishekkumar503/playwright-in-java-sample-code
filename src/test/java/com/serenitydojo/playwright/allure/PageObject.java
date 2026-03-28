@@ -3,6 +3,7 @@ package com.serenitydojo.playwright.allure;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
+import com.microsoft.playwright.options.LoadState;
 import com.serenitydojo.playwright.browserSetup.Base;
 import io.qameta.allure.Allure;
 import org.assertj.core.api.Assertions;
@@ -28,7 +29,8 @@ public class PageObject implements Screenshot{
     @BeforeEach
     void setUp(Page page) {
         page.navigate("https://www.practicesoftwaretesting.com/");
-        page.setDefaultTimeout(60000); // Set higher default timeout Default is 30000
+        page.waitForLoadState(LoadState.NETWORKIDLE); // Wait until no network activity Fix CICD pipeline
+
         searchComponent = new SearchComponent(page);
         productList = new ProductList(page);
         productDetails = new ProductDetails(page);
