@@ -123,7 +123,7 @@
                 <configuration>
                     <includes>
                         <skipTests>false</skipTests>
-                        <include>**/cucumber/Test.java</include>
+                        <include>**/allure/PageObject.java</include>
 <!--                        <include>**/cucumber/Tests.java</include>-->
                     </includes>
                 </configuration>
@@ -143,12 +143,12 @@
                         </goals>
                     </execution>
                 </executions>
-<!--                <configuration>-->
-<!--                    <includes>-->
-<!--                        <include>**/*Test.java</include>-->
+                <configuration>
+                    <includes>
+                        <include>**/allure/PageObject.java</include>
 <!--                        <include>**/*Tests.java</include>-->
-<!--                    </includes>-->
-<!--                </configuration>-->
+                    </includes>
+                </configuration>
             </plugin>
 
             <plugin>
@@ -157,7 +157,7 @@
                 <version>2.15.0</version>
                 <configuration>
                     <reportVersion>${allure.version}</reportVersion>
-                    <resultsDirectory>${project.build.directory}/allure-reports</resultsDirectory>
+                    <resultsDirectory>${project.build.directory}/allure-results</resultsDirectory>
                 </configuration>
                 <executions>
                     <execution>
