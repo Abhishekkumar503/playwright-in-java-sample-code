@@ -14,9 +14,9 @@ jobs:
     steps:
       # Set up Node.js
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 'lts/*'
 
       # Set up JDK 17
       - name: Set up JDK 17
