@@ -28,6 +28,7 @@ public class PageObject implements Screenshot{
     @BeforeEach
     void setUp(Page page) {
         page.navigate("https://www.practicesoftwaretesting.com/");
+        page.setDefaultTimeout(60000); // Set higher default timeout Default is 30000
         searchComponent = new SearchComponent(page);
         productList = new ProductList(page);
         productDetails = new ProductDetails(page);
