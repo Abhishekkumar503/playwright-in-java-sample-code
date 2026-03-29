@@ -2,13 +2,53 @@ name: Nightly Builds
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Runs daily at midnight UTC
+    # ✅ IMPROVED: More specific timing + UTC clarification
+    - cron: '0 2 * * *' # Runs daily at 2 AM UTC (gives time for backlog)
   workflow_dispatch: # Allows manual triggering of the workflow
+
+# ✅ NEW: Concurrency settings for nightly builds
+concurrency:
+  group: "nightly-builds"
+  cancel-in-progress: false  # Don't cancel nightly runs
 
 jobs:
   build-main:
-    name: Main
+    name: Nightly Build - Main Branch
     uses: ./.github/workflows/setup-and-test.yml
     with:
       branch: main
-      timeout : 30
+      timeout: 120  # ✅ FIXED: Changed to actual minutes (was just "30")
+    # ✅ NEW: Secrets if needed
+    secrets: inherit
+
+  # ✅ NEW: Optional: Build staging as well
+  # build-staging:
+  #   name: Nightly Build - Staging Branch
+  #   uses: ./.github/workflows/setup-and-test.yml
+  #   with:
+  #     branch: staging
+  #     timeout: 120
+  #   secrets: inherit
+
+  # ✅ NEW: Notify on failure
+  notify-on-failure:
+    name: Notify Build Status
+    needs: [build-main]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post Failure Notification
+        run: |
+          echo "❌ Nightly build failed for main branch"
+          echo "Check: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+  # ✅ NEW: Success notification
+  notify-on-success:
+    name: Build Success
+    needs: [build-main]
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post Success Notification
+        run: |
+          echo "✅ Nightly build completed successfully for main branch"

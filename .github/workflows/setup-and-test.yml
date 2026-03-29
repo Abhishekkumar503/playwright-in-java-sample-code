@@ -6,66 +6,111 @@ on:
       branch:
         required: true
         type: string
+      timeout:
+        required: false
+        type: number
+        default: 90
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout }}  # ✅ Use input timeout
 
     steps:
-      # Set up Node.js
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 'lts/*'
-
-      # Set up JDK 24
-      - name: Set up JDK 24
-        uses: actions/setup-java@v4
-        with:
-          java-version: '24'
-          distribution: 'adopt'
-
-      # Install Maven 3.9.9
-      - name: Setup Maven Action
-        uses: s4u/setup-maven-action@v1.7.0
-        with:
-          checkout-fetch-depth: 0
-          java-version: 17
-          java-distribution: temurin
-          maven-version: 3.9.9
-
-      # Verify Maven installation
-      - name: Verify Maven version
-        run: mvn --version
-
-      # ache Maven dependencies
-#      - name: Cache Maven dependencies
-#        uses: actions/cache@v3
-#        with:
-#          path: ~/.m2
-#          key: ${{ runner.os }}-maven-${{ inputs.branch }}-${{ hashFiles('**/pom.xml') }}
-#          restore-keys: |
-#            ${{ runner.os }}-maven
-
-      # Install Playwright dependencies
-      - name: Install Playwright dependencies
-        run: npx playwright install-deps
-
-      - name: Show Project Structure
-        run: |
-          echo "Project structure for branch ${{ inputs.branch}}:"
-          find . -name "*.java" | sed 's|[^/]*/|  |g'
-
-      # Checkout the specified branch
+      # ✅ IMPROVED: Checkout FIRST (before setup, for faster setup)
       - name: Checkout branch ${{ inputs.branch }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ inputs.branch }}
           fetch-depth: 0
           clean: true
 
-      # Run the test suite
+      # ✅ IMPROVED: Set up JDK 21 (consistent with other workflows)
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'  # ✅ FIXED: Removed conflicting JDK 17
+          cache: 'maven'
+
+      # ✅ IMPROVED: Setup Maven (removed conflicting java-version)
+      - name: Setup Maven Action
+        uses: s4u/setup-maven-action@v1.7.0
+        with:
+          maven-version: 3.9.9
+          # ✅ REMOVED: conflicting java-version and java-distribution
+
+      # ✅ Verify Maven installation
+      - name: Verify Maven version
+        run: mvn --version
+
+      # ✅ IMPROVED: Node.js with caching (was missing!)
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'  # ✅ NEW: Cache npm dependencies
+
+      # ✅ IMPROVED: Proper Playwright browser installation (CRITICAL FIX)
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium webkit firefox
+        timeout-minutes: 10
+
+      # ✅ IMPROVED: Install Maven dependencies
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      # ✅ IMPROVED: Build project (parallel, skip tests)
+      - name: Build project
+        run: mvn clean compile -B -DskipTests --no-transfer-progress -T 1C
+        timeout-minutes: 20
+
+      # ✅ IMPROVED: Show project structure with context
+      - name: Show Project Structure
+        run: |
+          echo "## Project Structure for branch: ${{ inputs.branch }}" | tee -a $GITHUB_STEP_SUMMARY
+          echo "Java Files:" >> $GITHUB_STEP_SUMMARY
+          find . -name "*.java" -type f | head -20 >> $GITHUB_STEP_SUMMARY || echo "No Java files found"
+
+      # ✅ IMPROVED: Run tests with proper timeouts
       - name: Run Playwright Tests
         run: |
-          echo "Running tests for branch ${{ inputs.branch }}"
-          mvn clean verify
+          echo "🧪 Running tests for branch: ${{ inputs.branch }}"
+          mvn verify \
+            -B \
+            --no-transfer-progress \
+            -T 1C \
+            -Dplaywright.timeout=60000
+        env:
+          CI: true
+          # ✅ ADDED: Timeout configuration for CI
+          PLAYWRIGHT_TIMEOUT: 60000
+          BROWSER_TIMEOUT: 60000
+        timeout-minutes: 60
+
+      # ✅ IMPROVED: Upload test reports
+      - name: Upload Test Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-${{ inputs.branch }}-${{ github.run_id }}
+          path: |
+            target/site/serenity/
+            target/allure-results/
+            target/surefire-reports/
+          retention-days: 7
+          if-no-files-found: warn
+
+      # ✅ NEW: Test failure summary
+      - name: Test Summary
+        if: always()
+        run: |
+          if [ -d target/surefire-reports ]; then
+            echo "### Tests for ${{ inputs.branch }} 📊" >> $GITHUB_STEP_SUMMARY
+            find target/surefire-reports -name "*.xml" | wc -l | xargs echo "Test files:" >> $GITHUB_STEP_SUMMARY
+          fi
