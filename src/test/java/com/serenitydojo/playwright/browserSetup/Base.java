@@ -13,7 +13,7 @@ public class Base implements OptionsFactory {
     public Options getOptions() {
         return new Options().setLaunchOptions(new BrowserType.
                 LaunchOptions().
-                setHeadless(false).
+                setHeadless(true).
                 setArgs(Arrays.asList("--no-sandbox",
                         "--disable-gpu",
                         "--disable-extensions"))
