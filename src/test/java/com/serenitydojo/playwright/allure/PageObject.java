@@ -5,20 +5,17 @@ import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
 import com.microsoft.playwright.options.LoadState;
 import com.serenitydojo.playwright.browserSetup.Base;
-import io.qameta.allure.Allure;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayInputStream;
 import java.util.List;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 @UsePlaywright(Base.class)
-public class PageObject implements Screenshot{
+public class PageObject implements Screenshot {
 
     SearchComponent searchComponent;
     ProductList productList;
@@ -29,8 +26,8 @@ public class PageObject implements Screenshot{
     @BeforeEach
     void setUp(Page page) {
         page.navigate("https://www.practicesoftwaretesting.com/");
-        page.setDefaultTimeout(60000);
-        page.setDefaultNavigationTimeout(60000);
+        page.setDefaultTimeout(120_000); // 2 min timeout for slow CI
+        page.setDefaultNavigationTimeout(120_000);
 
         searchComponent = new SearchComponent(page);
         productList = new ProductList(page);
@@ -43,29 +40,33 @@ public class PageObject implements Screenshot{
     @Test
     void withoutPageObjects(Page page) {
         // Search for pliers
-        page.waitForResponse("**/products/search?q=pliers**", () -> {
-            page.getByPlaceholder("Search").fill("pliers");
-            page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Search ")).click();
-        });
+        page.getByPlaceholder("Search").waitFor();
+        page.getByPlaceholder("Search").fill("pliers");
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Search ")).click();
+
         page.waitForLoadState(LoadState.DOMCONTENTLOADED);
 
         // Show details page
+        page.locator(".card").getByText("Combination Pliers")
+                .waitFor();
         page.locator(".card").getByText("Combination Pliers").click();
 
-        // Increase cart quanity
+        // Increase cart quantity
         page.getByTestId("increase-quantity").click();
         page.getByTestId("increase-quantity").click();
+
         // Add to cart
         page.getByText("Add to cart").click();
-        page.waitForCondition(() -> page.getByTestId("cart-quantity").textContent().equals("3"));
+
+        // Wait for cart quantity to update
+        page.getByTestId("cart-quantity").waitFor();
+        assertThat(page.getByTestId("cart-quantity")).hasText("3");
 
         // Open the cart
         page.getByTestId("nav-cart").click();
-
         page.waitForLoadState(LoadState.DOMCONTENTLOADED);
 
-
-        // check cart contents
+        // Verify cart
         assertThat(page.locator(".product-title").getByText("Combination Pliers")).isVisible();
         assertThat(page.getByTestId("cart-quantity").getByText("3")).isVisible();
     }
@@ -83,7 +84,6 @@ public class PageObject implements Screenshot{
 
         navBar.openCart();
         page.waitForLoadState(LoadState.DOMCONTENTLOADED);
-
 
         List<CartLineItem> lineItems = checkoutCart.getLineItems();
 
@@ -112,12 +112,13 @@ public class PageObject implements Screenshot{
         productDetails.addToCart();
 
         navBar.openCart();
+        page.waitForLoadState(LoadState.DOMCONTENTLOADED);
 
         List<CartLineItem> lineItems = checkoutCart.getLineItems();
 
         Assertions.assertThat(lineItems).hasSize(2);
         List<String> productNames = lineItems.stream().map(CartLineItem::title).toList();
-        Assertions.assertThat(productNames).contains("Bolt Cutters","Slip Joint Pliers");
+        Assertions.assertThat(productNames).contains("Bolt Cutters", "Slip Joint Pliers");
 
         Assertions.assertThat(lineItems)
                 .allSatisfy(item -> {
@@ -125,9 +126,6 @@ public class PageObject implements Screenshot{
                     Assertions.assertThat(item.price()).isGreaterThan(0.0);
                     Assertions.assertThat(item.total()).isGreaterThan(0.0);
                     Assertions.assertThat(item.total()).isEqualTo(item.quantity() * item.price());
-
                 });
-//        Assertions.assertThat(checkoutCart.total()).isEqualTo( lineItems.get(0).total() + lineItems.get(1).total());
-
     }
 }
