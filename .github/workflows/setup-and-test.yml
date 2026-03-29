@@ -31,14 +31,15 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'  # ✅ FIXED: Removed conflicting JDK 17
-
+          cache: 'maven'
 
       # ✅ IMPROVED: Setup Maven (removed conflicting java-version)
       - name: Setup Maven Action
         uses: s4u/setup-maven-action@v1.7.0
         with:
           maven-version: 3.9.9
-          # ✅ REMOVED: conflicting java-version and java-distribution
+          java-version: '21'
+
 
       # ✅ Verify Maven installation
       - name: Verify Maven version
