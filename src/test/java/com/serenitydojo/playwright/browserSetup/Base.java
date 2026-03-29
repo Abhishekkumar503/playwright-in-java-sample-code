@@ -13,10 +13,10 @@ public class Base implements OptionsFactory {
     public Options getOptions() {
         return new Options().setLaunchOptions(new BrowserType.
                 LaunchOptions().
-                setHeadless(true).
+                setHeadless(false).
                 setArgs(Arrays.asList("--no-sandbox",
                         "--disable-gpu",
-                        "--disable-extensions","--start-maximized"))
+                        "--disable-extensions"))
         ) .setContextOptions(new Browser.NewContextOptions()
                         .setViewportSize(1920, 1080)  // This for CI
                 ).setTestIdAttribute("data-test");
