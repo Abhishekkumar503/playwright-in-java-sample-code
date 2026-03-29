@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'          # Changed to 17 - more stable for Playwright + Serenity
+          java-version: '24'          # Changed to 17 - more stable for Playwright + Serenity
           cache: 'maven'
 
       # Maven Setup (you can keep or remove the extra setup-maven if not needed)
@@ -47,9 +47,8 @@ jobs:
       # Install Playwright Browsers + OS dependencies (Java way - this is the fix)
       - name: Install Playwright Browsers
         run: |
-          mvn exec:java -e \
-            -Dexec.mainClass=com.microsoft.playwright.CLI \
-            -Dexec.args="install --with-deps"
+          npx playwright install --with-deps chromium webkit firefox
+        timeout-minutes: 10
 
       # Run your Serenity/Playwright tests
       - name: Run Playwright Tests
