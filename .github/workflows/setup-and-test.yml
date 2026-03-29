@@ -27,7 +27,7 @@ jobs:
 
       # ✅ IMPROVED: Set up JDK 21 (consistent with other workflows)
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '21'  # ✅ FIXED: Removed conflicting JDK 17
