@@ -45,6 +45,8 @@ public class PageObject implements Screenshot{
             page.getByPlaceholder("Search").fill("pliers");
             page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Search ")).click();
         });
+        page.waitForLoadState(LoadState.DOMCONTENTLOADED);
+
         // Show details page
         page.locator(".card").getByText("Combination Pliers").click();
 
@@ -58,6 +60,9 @@ public class PageObject implements Screenshot{
         // Open the cart
         page.getByTestId("nav-cart").click();
 
+        page.waitForLoadState(LoadState.DOMCONTENTLOADED);
+
+
         // check cart contents
         assertThat(page.locator(".product-title").getByText("Combination Pliers")).isVisible();
         assertThat(page.getByTestId("cart-quantity").getByText("3")).isVisible();
@@ -67,12 +72,16 @@ public class PageObject implements Screenshot{
     @Test
     void withPageObjects(Page page) {
         searchComponent.searchBy("pliers");
+        page.waitForLoadState(LoadState.DOMCONTENTLOADED);
+
         productList.viewProductDetails("Combination Pliers");
 
         productDetails.increaseQuanityBy(2);
         productDetails.addToCart();
 
         navBar.openCart();
+        page.waitForLoadState(LoadState.DOMCONTENTLOADED);
+
 
         List<CartLineItem> lineItems = checkoutCart.getLineItems();
 
@@ -90,6 +99,8 @@ public class PageObject implements Screenshot{
     @Test
     void whenCheckingOutMultipleItems(Page page) {
         navBar.openHomePage();
+        page.waitForLoadState(LoadState.DOMCONTENTLOADED);
+
         productList.viewProductDetails("Bolt Cutters");
         productDetails.increaseQuanityBy(2);
         productDetails.addToCart();
