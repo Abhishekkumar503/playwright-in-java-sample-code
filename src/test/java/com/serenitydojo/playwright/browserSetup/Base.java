@@ -1,5 +1,6 @@
 package com.serenitydojo.playwright.browserSetup;
 
+import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.junit.Options;
 import com.microsoft.playwright.junit.OptionsFactory;
@@ -16,6 +17,8 @@ public class Base implements OptionsFactory {
                 setArgs(Arrays.asList("--no-sandbox",
                         "--disable-gpu",
                         "--disable-extensions","--start-maximized"))
-        ).setTestIdAttribute("data-test");
+        ) .setContextOptions(new Browser.NewContextOptions()
+                        .setViewportSize(1920, 1080)  // This for CI
+                ).setTestIdAttribute("data-test");
     }
 }
