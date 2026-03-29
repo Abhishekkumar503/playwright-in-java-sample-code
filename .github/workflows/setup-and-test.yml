@@ -31,7 +31,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'  # ✅ FIXED: Removed conflicting JDK 17
-          cache: 'maven'
+
 
       # ✅ IMPROVED: Setup Maven (removed conflicting java-version)
       - name: Setup Maven Action
