@@ -29,7 +29,6 @@ public class PageObject implements Screenshot{
     @BeforeEach
     void setUp(Page page) {
         page.navigate("https://www.practicesoftwaretesting.com/");
-        page.waitForLoadState(LoadState.NETWORKIDLE); // Wait until no network activity Fix CICD pipeline
 
         searchComponent = new SearchComponent(page);
         productList = new ProductList(page);
