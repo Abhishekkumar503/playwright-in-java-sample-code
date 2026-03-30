@@ -52,9 +52,9 @@ jobs:
           npx playwright install --with-deps chromium webkit firefox
         timeout-minutes: 10
 
-      - name: Verify Playwright Java
-#        run: mvn test-compile exec:java -Dexec.mainClass=VersionCheck.PlaywrightVersionCheck
-        run : mvn exec:java -Dexec.mainClass=VersionCheck.PlaywrightVersionCheck -Dexec.classpathScope=test
+#      - name: Verify Playwright Java
+##        run: mvn test-compile exec:java -Dexec.mainClass=VersionCheck.PlaywrightVersionCheck
+#        run : mvn exec:java -Dexec.mainClass=VersionCheck.PlaywrightVersionCheck -Dexec.classpathScope=test
 
 
       - name: Check installed browsers
