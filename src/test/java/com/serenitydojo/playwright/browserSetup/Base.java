@@ -16,8 +16,7 @@ public class Base implements OptionsFactory {
                 setHeadless(true).
                 setArgs(Arrays.asList("--no-sandbox",
                         "--disable-gpu",
-                        "--disable-extensions",
-                        "--start-maximized"))
+                        "--disable-extensions"))
         ).setTestIdAttribute("data-test");
     }
 }
