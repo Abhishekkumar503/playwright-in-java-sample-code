@@ -25,16 +25,9 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'  # ✅ Changed from 24 to 21 LTS (more stable)
-#          cache: 'maven'
-
-      # ✅ IMPROVED: Better Maven version setup
-      - name: Setup Maven
-        uses: s4u/setup-maven-action@v1.7.0
-        with:
-          maven-version: 3.9.9
-
+#
       - name: Verify Maven
-        run: mvn --version
+        run: mvn -version
 
       # ✅ IMPROVED: Optimized Maven cache with better strategy
       - name: Cache Maven dependencies
