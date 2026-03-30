@@ -16,9 +16,8 @@ public class Base implements OptionsFactory {
                 setHeadless(true).
                 setArgs(Arrays.asList("--no-sandbox",
                         "--disable-gpu",
-                        "--disable-extensions"))
-        ) .setContextOptions(new Browser.NewContextOptions()
-                        .setViewportSize(1920, 1080)  // This for CI
-                ).setTestIdAttribute("data-test");
+                        "--disable-extensions",
+                        "--start-maximized"))
+        ).setTestIdAttribute("data-test");
     }
 }
