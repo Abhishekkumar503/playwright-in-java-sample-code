@@ -2,9 +2,12 @@ package com.serenitydojo.playwright.allure;
 
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
 import com.microsoft.playwright.options.LoadState;
+import com.microsoft.playwright.options.WaitUntilState;
 import com.serenitydojo.playwright.browserSetup.Base;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,15 +29,59 @@ public class PageObject implements Screenshot {
 
     @BeforeEach
     void setUp(Page page) {
-        // ✅ FIX #1: Set timeout BEFORE navigation
+        // ✅ FIX #1: Set viewport to mimic real browser
+        page.setViewportSize(1920, 1080);
+
+        // ✅ FIX #2: Add user agent to avoid bot detection
+        page.context().addInitScript("Object.defineProperty(navigator, 'webdriver', {get: () => false,});");
+
+        // ✅ FIX #3: Set timeouts BEFORE navigation
         page.setDefaultTimeout(60_000);
         page.setDefaultNavigationTimeout(60_000);
 
-        // ✅ FIX #2: Navigate to page
-        page.navigate("https://www.practicesoftwaretesting.com/");
+        // ✅ FIX #4: Add headers to look like real browser
+        page.setExtraHTTPHeaders(new java.util.HashMap<String, String>() {{
+            put("Accept-Language", "en-US,en;q=0.9");
+            put("Accept-Encoding", "gzip, deflate, br");
+        }});
 
-        // ✅ FIX #3: CRITICAL - Wait for page to fully load
-        // Try NETWORKIDLE first, fall back to DOMCONTENTLOADED
+        // ✅ FIX #5: Navigate with goto options
+        try {
+            page.navigate("https://practicesoftwaretesting.com",
+                    new Page.NavigateOptions()
+                            .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+                            .setTimeout(60_000)
+            );
+        } catch (Exception e) {
+            System.out.println("⚠️ First navigation attempt failed, retrying...");
+            try {
+                Thread.sleep(2000);  // Wait 2 seconds
+                page.navigate("https://practicesoftwaretesting.com",
+                        new Page.NavigateOptions()
+                                .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+                                .setTimeout(60_000)
+                );
+            } catch (Exception e2) {
+                throw new RuntimeException("Failed to navigate after 2 attempts", e2);
+            }
+        }
+
+        // ✅ FIX #6: Check if Cloudflare protection page appeared
+        String pageTitle = page.title();
+        String pageContent = page.content();
+
+        if (pageTitle.contains("Just a moment") || pageContent.contains("cf_clearance")) {
+            System.out.println("⚠️ Cloudflare protection detected, waiting for bypass...");
+            try {
+                // Wait up to 15 seconds for Cloudflare to pass
+                page.waitForLoadState(LoadState.NETWORKIDLE);
+            } catch (Exception e) {
+                System.out.println("⚠️ NETWORKIDLE timeout after Cloudflare, trying DOMCONTENTLOADED");
+                page.waitForLoadState(LoadState.DOMCONTENTLOADED);
+            }
+        }
+
+        // ✅ FIX #7: Wait for page to be ready
         try {
             page.waitForLoadState(LoadState.NETWORKIDLE);
         } catch (Exception e) {
@@ -42,15 +89,52 @@ public class PageObject implements Screenshot {
             page.waitForLoadState(LoadState.DOMCONTENTLOADED);
         }
 
-        // ✅ FIX #4: Verify search box is visible before proceeding
-        Locator searchBox = page.getByTestId("search-query");
-        try {
-            searchBox.waitFor(new Locator.WaitForOptions().setTimeout(30_000));
-        } catch (Exception e) {
-            System.err.println("❌ ERROR: Search box not found after 30 seconds");
-            System.err.println("Page URL: " + page.url());
-            System.err.println("Page title: " + page.title());
-            throw new RuntimeException("Search box element not found. Page may not have loaded properly.", e);
+        // ✅ FIX #8: Try multiple selectors for search box
+        Locator searchBox = null;
+        String[] searchSelectors = {
+                "[data-test=\"search-query\"]",        // Original
+                "input[placeholder*=\"Search\"]",      // By placeholder
+                "[placeholder*=\"Search\"]",           // Any element with placeholder
+                "input[type=\"search\"]",              // Search input type
+                ".search-input",                       // Common CSS class
+                "#search"                              // By ID
+        };
+
+        for (String selector : searchSelectors) {
+            try {
+                searchBox = page.locator(selector);
+                // Verify it exists and is visible
+                if (searchBox.count() > 0) {
+                    searchBox.waitFor(new Locator.WaitForOptions()
+                            .setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE)
+                            .setTimeout(10_000)
+                    );
+                    System.out.println("✅ Found search box with selector: " + selector);
+                    break;
+                }
+            } catch (Exception e) {
+                // Try next selector
+                System.out.println("⚠️ Selector failed: " + selector);
+            }
+        }
+
+        // ✅ FIX #9: If still not found, try fallback
+        if (searchBox == null || searchBox.count() == 0) {
+            System.out.println("❌ ERROR: Could not find search box with any selector");
+            System.out.println("Page URL: " + page.url());
+            System.out.println("Page title: " + page.title());
+            System.out.println("Page HTML (first 500 chars): " + page.content().substring(0, Math.min(500, page.content().length())));
+
+            // Last resort: find by text
+            try {
+                searchBox = page.locator("input, [role='searchbox']").first();
+                searchBox.waitFor(new Locator.WaitForOptions().setTimeout(10_000));
+                System.out.println("✅ Found input/searchbox via generic search");
+            } catch (Exception e) {
+                throw new RuntimeException("Search box element not found after trying all methods. " +
+                        "Page may be protected by Cloudflare or structure changed. " +
+                        "Page title: " + page.title(), e);
+            }
         }
 
         // Now safe to instantiate components
@@ -65,11 +149,11 @@ public class PageObject implements Screenshot {
     @Test
     void withoutPageObjects(Page page) {
         // Search for pliers
-        page.getByTestId("search-query").waitFor();
-        page.getByTestId("search-query").fill("pliers");
+        page.getByPlaceholder("Search").waitFor();
+        page.getByPlaceholder("Search").fill("pliers");
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Search ")).click();
 
-        // ✅ FIX: Wait for results to load
+        // Wait for results to load
         page.waitForLoadState(LoadState.DOMCONTENTLOADED);
         page.locator(".card").first().waitFor(new Locator.WaitForOptions().setTimeout(30_000));
 
@@ -77,7 +161,7 @@ public class PageObject implements Screenshot {
         page.locator(".card").getByText("Combination Pliers").waitFor();
         page.locator(".card").getByText("Combination Pliers").click();
 
-        // ✅ FIX: Wait after click
+        // Wait after click
         page.waitForLoadState(LoadState.DOMCONTENTLOADED);
 
         // Increase cart quantity
@@ -106,7 +190,7 @@ public class PageObject implements Screenshot {
         searchComponent.searchBy("pliers");
         page.waitForLoadState(LoadState.DOMCONTENTLOADED);
 
-        // ✅ FIX: Wait for product card to appear
+        // Wait for product card to appear
         page.locator(".card").first().waitFor(new Locator.WaitForOptions().setTimeout(30_000));
 
         productList.viewProductDetails("Combination Pliers");
@@ -136,7 +220,7 @@ public class PageObject implements Screenshot {
         navBar.openHomePage();
         page.waitForLoadState(LoadState.DOMCONTENTLOADED);
 
-        // ✅ FIX: Wait for product list to render
+        // Wait for product list to render
         page.locator(".card").first().waitFor(new Locator.WaitForOptions().setTimeout(30_000));
 
         productList.viewProductDetails("Bolt Cutters");
@@ -148,7 +232,7 @@ public class PageObject implements Screenshot {
         navBar.openHomePage();
         page.waitForLoadState(LoadState.DOMCONTENTLOADED);
 
-        // ✅ FIX: Retry if product not found (network flakiness)
+        // Retry if product not found (network flakiness)
         try {
             productList.viewProductDetails("Slip Joint Pliers");
         } catch (Exception e) {
