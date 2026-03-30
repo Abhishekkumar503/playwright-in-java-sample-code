@@ -24,7 +24,7 @@ public class PageObject implements Screenshot{
 
     @BeforeEach
     void setUp(Page page) {
-        page.navigate("https://v4.practicesoftwaretesting.com/#/");
+        page.navigate("https://practicesoftwaretesting.com/#/");
         searchComponent = new SearchComponent(page);
         productList = new ProductList(page);
         productDetails = new ProductDetails(page);
