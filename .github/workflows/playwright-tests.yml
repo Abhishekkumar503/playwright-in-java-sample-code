@@ -25,16 +25,16 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'  # ✅ Changed from 24 to 21 LTS (more stable)
-          cache: 'maven'
+#          cache: 'maven'
 
-#      # ✅ IMPROVED: Better Maven version setup
-#      - name: Setup Maven
-#        uses: s4u/setup-maven-action@v1.7.0
-#        with:
-#          maven-version: 3.9.9
-#
-#      - name: Verify Maven
-#        run: mvn --version
+      # ✅ IMPROVED: Better Maven version setup
+      - name: Setup Maven
+        uses: s4u/setup-maven-action@v1.7.0
+        with:
+          maven-version: 3.9.9
+
+      - name: Verify Maven
+        run: mvn --version
 
       # ✅ IMPROVED: Optimized Maven cache with better strategy
       - name: Cache Maven dependencies
@@ -63,8 +63,7 @@ jobs:
       - name: Run Playwright Tests
         run: |
           # Set Playwright timeout to 60 seconds per test
-          export PLAYWRIGHT_JUNIT_OUTPUT_NAME=test-results.xml
-          mvn verify \
+          mvn clean verify \
             -B \
             --no-transfer-progress \
             -T 1C \
