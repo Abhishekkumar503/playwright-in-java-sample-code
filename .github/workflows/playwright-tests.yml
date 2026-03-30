@@ -53,7 +53,9 @@ jobs:
         timeout-minutes: 10
 
       - name: Verify Playwright Java
-        run: mvn test-compile exec:java -Dexec.mainClass=VersionCheck.PlaywrightVersionCheck
+#        run: mvn test-compile exec:java -Dexec.mainClass=VersionCheck.PlaywrightVersionCheck
+        run : mvn exec:java -Dexec.mainClass=VersionCheck.PlaywrightVersionCheck -Dexec.classpathScope=test
+
 
       - name: Check installed browsers
         run: npx playwright install --dry-run
