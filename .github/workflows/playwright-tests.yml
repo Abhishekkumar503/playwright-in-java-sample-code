@@ -53,7 +53,7 @@ jobs:
         timeout-minutes: 10
 
       - name: Verify Playwright Java
-        run: mvn exec:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="--version"
+        run: mvn compile exec:java -Dexec.mainClass=src/test/java/VersionCheck/PlaywrightVersionCheck
 
       - name: Check installed browsers
         run: npx playwright install --dry-run
