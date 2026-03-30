@@ -43,7 +43,7 @@ public class PageObject implements Screenshot {
         }
 
         // ✅ FIX #4: Verify search box is visible before proceeding
-        Locator searchBox = page.getByPlaceholder("Search");
+        Locator searchBox = page.getByTestId("search-query");
         try {
             searchBox.waitFor(new Locator.WaitForOptions().setTimeout(30_000));
         } catch (Exception e) {
@@ -65,8 +65,8 @@ public class PageObject implements Screenshot {
     @Test
     void withoutPageObjects(Page page) {
         // Search for pliers
-        page.getByPlaceholder("Search").waitFor();
-        page.getByPlaceholder("Search").fill("pliers");
+        page.getByTestId("search-query").waitFor();
+        page.getByTestId("search-query").fill("pliers");
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Search ")).click();
 
         // ✅ FIX: Wait for results to load
