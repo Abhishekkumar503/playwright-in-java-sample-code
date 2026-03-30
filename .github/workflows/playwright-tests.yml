@@ -52,6 +52,12 @@ jobs:
           npx playwright install --with-deps chromium webkit firefox
         timeout-minutes: 10
 
+      - name: Verify Playwright Java
+        run: mvn exec:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="--version"
+
+      - name: Check installed browsers
+        run: npx playwright install --dry-run
+
       # ✅ IMPROVED: Run tests with proper timeout & retry
       - name: Run Playwright Tests
         run: |
