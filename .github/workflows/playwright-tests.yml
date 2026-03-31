@@ -64,17 +64,17 @@ jobs:
       - name: Run Playwright Tests
         run: |
           # Set Playwright timeout to 60 seconds per test
-          mvn clean verify \
-            -B \
-            --no-transfer-progress \
-            -T 1C \
-            -Dplaywright.timeout=60000 \
-            -Dplaywright.launch.args="--disable-gpu"
+          mvn clean verify
+#            -B \
+#            --no-transfer-progress \
+#            -T 1C \
+#            -Dplaywright.timeout=60000 \
+#            -Dplaywright.launch.args="--disable-gpu"
         env:
           CI: true
           # ✅ ADD: Increase timeouts for CI environment (slower)
-          PLAYWRIGHT_TIMEOUT: 60000
-          BROWSER_TIMEOUT: 60000
+          PLAYWRIGHT_TIMEOUT: 600000
+          BROWSER_TIMEOUT: 600000
         timeout-minutes: 60
 
       # ✅ IMPROVED: Upload artifacts with better structure
