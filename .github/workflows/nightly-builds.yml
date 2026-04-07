@@ -4,7 +4,17 @@ on:
   schedule:
     # ✅ IMPROVED: More specific timing + UTC clarification
     - cron: '0 0 * * *' # Runs daily at 12 AM UTC (gives time for backlog)
-  workflow_dispatch: # Allows manual triggering of the workflow
+  workflow_dispatch: # ✅ IMPROVED: Allows manual triggering of the workflow anytime
+    inputs:
+      branch:
+        description: 'Branch to build (default: main)'
+        required: false
+        default: 'main'
+        type: choice
+        options:
+          - main
+          - staging
+          - develop
 
 # ✅ NEW: Concurrency settings for nightly builds
 concurrency:
@@ -13,10 +23,10 @@ concurrency:
 
 jobs:
   build-main:
-    name: Nightly Build - Main Branch
+    name: Nightly Build - ${{ inputs.branch || 'main' }}
     uses: ./.github/workflows/setup-and-test.yml
     with:
-      branch: main
+      branch: ${{ inputs.branch || 'main' }}
       timeout: 120  # ✅ FIXED: Changed to actual minutes (was just "30")
     # ✅ NEW: Secrets if needed
     secrets: inherit
