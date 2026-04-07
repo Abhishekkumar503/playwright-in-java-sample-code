@@ -45,12 +45,11 @@ jobs:
       - name: Verify Maven version
         run: mvn --version
 
-      # ✅ IMPROVED: Node.js with caching (was missing!)
+      # ✅ IMPROVED: Node.js setup (for Playwright CLI)
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
-          cache: 'npm'  # ✅ NEW: Cache npm dependencies
 
       # ✅ IMPROVED: Proper Playwright browser installation (CRITICAL FIX)
       - name: Install Playwright Browsers
