@@ -29,6 +29,8 @@ jobs:
     name: Download Test Artifacts
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    outputs:
+      artifact-id: ${{ steps.download.outputs.download-path }}
 
     steps:
       - name: Checkout code
@@ -36,24 +38,31 @@ jobs:
         with:
           fetch-depth: 0
 
+      # ✅ Download artifacts from the triggering workflow run
       - name: Download artifacts from Playwright Tests
-        uses: actions/download-artifact@v4
+        id: download
+        uses: dawidd6/action-download-artifact@v2
         with:
-          name: test-reports-${{ github.run_id }}
+          # ✅ Get artifacts from the workflow that triggered this
+          run_id: ${{ github.event.workflow_run.id }}
+          name: test-reports-.*
           path: ./artifacts
+          name_is_regexp: true
         continue-on-error: true
 
       - name: List downloaded artifacts
         run: |
           echo "📦 Downloaded artifacts:"
-          find ./artifacts -type f | head -20 || echo "No artifacts found"
+          find ./artifacts -type f 2>/dev/null | head -20 || echo "No artifacts found"
 
-      - name: Upload artifacts for next job
+      # ✅ Re-upload for next job to use
+      - name: Re-upload Allure Results
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results-${{ github.run_id }}
+          name: allure-results-for-report
           path: ./artifacts/target/allure-results/
           if-no-files-found: warn
+        continue-on-error: true
 
   build-allure-report:
     name: Build Allure Report
