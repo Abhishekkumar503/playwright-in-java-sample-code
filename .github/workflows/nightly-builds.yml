@@ -3,7 +3,7 @@ name: Nightly Builds
 on:
   schedule:
     # ✅ IMPROVED: More specific timing + UTC clarification
-    - cron: '0 2 * * *' # Runs daily at 2 AM UTC (gives time for backlog)
+    - cron: '0 0 * * *' # Runs daily at 12 AM UTC (gives time for backlog)
   workflow_dispatch: # Allows manual triggering of the workflow
 
 # ✅ NEW: Concurrency settings for nightly builds
