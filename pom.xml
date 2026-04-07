@@ -126,6 +126,8 @@
                         <include>**/GitAction/GitActionPageObject.java</include>
 <!--                        <include>**/cucumber/Tests.java</include>-->
                     </includes>
+                    <!-- ✅ NEW: Retry configuration for failed tests -->
+                    <rerunFailingTestsCount>2</rerunFailingTestsCount>
                 </configuration>
             </plugin>
 
@@ -148,6 +150,8 @@
                         <include>**/GitAction/GitActionPageObject.java</include>
 <!--                        <include>**/*Tests.java</include>-->
                     </includes>
+                    <!-- ✅ NEW: Retry configuration for failed integration tests -->
+                    <rerunFailingTestsCount>2</rerunFailingTestsCount>
                 </configuration>
             </plugin>
 

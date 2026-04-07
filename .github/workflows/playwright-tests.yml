@@ -60,16 +60,13 @@ jobs:
       - name: Check installed browsers
         run: npx playwright install --dry-run
 
-      # ✅ IMPROVED: Run tests with proper timeout & retry
-      - name: Run Playwright Tests
+      # ✅ IMPROVED: Run GitAction tests with proper timeout & retry
+      - name: Run GitAction Tests
         run: |
-          # Set Playwright timeout to 60 seconds per test
-          mvn clean verify
-#            -B \
-#            --no-transfer-progress \
-#            -T 1C \
-#            -Dplaywright.timeout=60000 \
-#            -Dplaywright.launch.args="--disable-gpu"
+          mvn clean verify -Dtest=com.serenitydojo.playwright.GitAction.GitActionPageObject \
+            -B \
+            --no-transfer-progress \
+            -T 1C
         env:
           CI: true
           # ✅ ADD: Increase timeouts for CI environment (slower)

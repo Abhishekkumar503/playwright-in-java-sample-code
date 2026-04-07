@@ -78,11 +78,12 @@ jobs:
           echo "Java Files:" >> $GITHUB_STEP_SUMMARY
           find . -name "*.java" -type f | head -20 >> $GITHUB_STEP_SUMMARY || echo "No Java files found"
 
-      # ✅ IMPROVED: Run tests with proper timeouts
-      - name: Run Playwright Tests
+      # ✅ IMPROVED: Run GitAction tests with proper timeouts
+      - name: Run GitAction Tests
         run: |
-          echo "🧪 Running tests for branch: ${{ inputs.branch }}"
+          echo "🧪 Running GitAction tests for branch: ${{ inputs.branch }}"
           mvn verify \
+            -Dtest=com.serenitydojo.playwright.GitAction.GitActionPageObject \
             -B \
             --no-transfer-progress \
             -T 1C \
