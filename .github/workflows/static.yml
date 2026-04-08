@@ -1,21 +1,21 @@
-# ✅ IMPROVED: Publish Allure Reports with proper path configuration
+# ✅ FIXED: Publish Allure Reports with proper artifact naming and path configuration
 
 name: Publish Allure Reports
 
 on:
-  # ✅ Triggers when test workflow completes
+  # Triggers when test workflow completes
   workflow_run:
     workflows: ["Playwright Tests"]
     types:
       - completed
     branches:
       - main
-  # ✅ Manual trigger for testing
+  # Manual trigger for testing
   workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: write  # ✅ FIXED: Need write permission to push to Allure-Report branch
+  contents: write
   pages: write
   id-token: write
 
@@ -29,8 +29,6 @@ jobs:
     name: Download Test Artifacts
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    outputs:
-      artifact-id: ${{ steps.download.outputs.download-path }}
 
     steps:
       - name: Checkout code
@@ -38,29 +36,31 @@ jobs:
         with:
           fetch-depth: 0
 
-      # ✅ Download artifacts from the triggering workflow run
+      # Download artifacts from the triggering workflow run
       - name: Download artifacts from Playwright Tests
         id: download
         uses: dawidd6/action-download-artifact@v2
         with:
-          # ✅ Get artifacts from the workflow that triggered this
+          # Get artifacts from the workflow that triggered this
           run_id: ${{ github.event.workflow_run.id }}
-          name: test-reports-.*
+          name: test-reports
           path: ./artifacts
-          name_is_regexp: true
         continue-on-error: true
 
       - name: List downloaded artifacts
         run: |
           echo "📦 Downloaded artifacts:"
           find ./artifacts -type f 2>/dev/null | head -20 || echo "No artifacts found"
+          echo ""
+          echo "Directory structure:"
+          find ./artifacts -type d 2>/dev/null | head -20 || echo "No directories found"
 
-      # ✅ Re-upload for next job to use
-      - name: Re-upload Allure Results
+      # ✅ CRITICAL FIX: Consistent artifact naming
+      - name: Re-upload Allure Results with consistent name
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results-for-report
-          path: ./artifacts/target/allure-results/
+          name: allure-results  # ✅ Use consistent name
+          path: ./artifacts
           if-no-files-found: warn
         continue-on-error: true
 
@@ -77,20 +77,25 @@ jobs:
           fetch-depth: 0
           ref: main
 
+      # ✅ CRITICAL FIX: Download with matching artifact name
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: allure-results-${{ github.run_id }}
-          path: ./allure-results
+          name: allure-results  # ✅ Must match the name from previous job
+          path: ./artifacts
 
       - name: Check for Allure Results
         id: find-report
         run: |
-          if [ -d "allure-results" ] && [ "$(ls -A allure-results)" ]; then
-            echo "✅ Found allure-results directory"
+          echo "📂 Checking artifacts directory:"
+          find ./artifacts -type f | head -20
+          
+          # Look for allure-results directory or json files
+          if find ./artifacts -name "*.json" -o -name "allure-results" | grep -q .; then
+            echo "✅ Found allure test results"
             echo "has-results=true" >> $GITHUB_OUTPUT
           else
-            echo "⚠️ No allure-results directory found"
+            echo "⚠️ No allure results found"
             echo "has-results=false" >> $GITHUB_OUTPUT
           fi
 
@@ -105,6 +110,26 @@ jobs:
         run: |
           npm install -g allure-commandline
 
+      # ✅ Handle different artifact structures
+      - name: Prepare Allure Results Directory
+        if: steps.find-report.outputs.has-results == 'true'
+        run: |
+          # If artifacts contains target/allure-results, use that
+          if [ -d "./artifacts/target/allure-results" ]; then
+            cp -r ./artifacts/target/allure-results ./allure-results
+          # Otherwise use artifacts directly if it contains json files
+          elif find ./artifacts -name "*.json" | grep -q .; then
+            mkdir -p ./allure-results
+            cp ./artifacts/*.json ./allure-results/ 2>/dev/null || true
+            cp ./artifacts/*.txt ./allure-results/ 2>/dev/null || true
+          else
+            echo "❌ Cannot find allure results in expected locations"
+            exit 1
+          fi
+          
+          echo "✅ Allure results prepared:"
+          ls -la ./allure-results/
+
       - name: Generate Allure Report
         if: steps.find-report.outputs.has-results == 'true'
         run: |
@@ -116,12 +141,14 @@ jobs:
         run: |
           if [ -f "allure-report/index.html" ]; then
             echo "✅ Report file exists"
-            ls -la allure-report/
+            ls -lah allure-report/ | head -20
           else
             echo "❌ Report not generated"
-            ls -la allure-report/ || echo "Directory not found"
+            ls -lah allure-report/ || echo "Directory not found"
+            exit 1
           fi
 
+      # ✅ Upload to GitHub Pages artifact
       - name: Upload Artifact to GitHub Pages
         if: steps.find-report.outputs.has-results == 'true'
         uses: actions/upload-pages-artifact@v3
@@ -133,6 +160,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: build-allure-report
+    if: needs.build-allure-report.result == 'success'
 
     steps:
       - name: Checkout Allure-Report branch
@@ -153,7 +181,8 @@ jobs:
           cd report
           tar -xf artifact.tar
           cd ..
-          ls -la report/
+          echo "✅ Artifact extracted"
+          ls -lah report/
 
       - name: Configure Git
         run: |
@@ -162,8 +191,8 @@ jobs:
 
       - name: Update Allure-Report branch
         run: |
-          # Remove old files except .git
-          find . -maxdepth 1 ! -name '.git' ! -name '.' -delete
+          # Remove old files except .git and .gitignore
+          find . -maxdepth 1 ! -name '.git' ! -name '.gitignore' ! -name '.' -delete
           
           # Copy new report
           cp -r report/* .
@@ -196,4 +225,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
